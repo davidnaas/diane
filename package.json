@@ -1,0 +1,19 @@
+{
+  "name": "diane",
+  "version": "0.0.1",
+  "description": "That recorder you like will come back in style",
+  "main": "diane.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidnaas/diane.git"
+  },
+  "author": "David Nääs",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/davidnaas/diane/issues"
+  },
+  "homepage": "https://github.com/davidnaas/diane#readme"
+}
