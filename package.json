@@ -2,10 +2,8 @@
   "name": "diane",
   "version": "0.0.1",
   "description": "That recorder you like will come back in style",
-  "main": "diane.js",
-  "scripts": {
-    "test": "npm test"
-  },
+  "main": "src/diane.js",
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/davidnaas/diane.git"
@@ -15,5 +13,14 @@
   "bugs": {
     "url": "https://github.com/davidnaas/diane/issues"
   },
-  "homepage": "https://github.com/davidnaas/diane#readme"
+  "homepage": "https://github.com/davidnaas/diane#readme",
+  "devDependencies": {},
+  "dependencies": {
+    "commander": "^2.9.0",
+    "electron-prebuilt": "1.3.1",
+    "sliced": "^1.0.1"
+  },
+  "bin": {
+    "diane": "./src/main.js"
+  }
 }
