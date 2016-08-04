@@ -1,6 +1,6 @@
 var fs = require('fs');
 var ipcRenderer = require('electron').ipcRenderer;
-var recorderCreator = require('./audio/recorder');
+var recorderCreator = require('./recorder');
 
 var ctx = new AudioContext();
 var recorder = recorderCreator(ctx, ipcRenderer.send);
@@ -23,7 +23,6 @@ ipcRenderer.on('action', function (event, action) {
 });
 
 function record() {
-  console.log("RECORD")
   var timer = window.setTimeout(() => {
     window.clearTimeout(timer);
     var blob = recorder.stop((encodedAudio) => {
