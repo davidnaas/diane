@@ -7,19 +7,21 @@ var parent = require('./ipc')(process);
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 var mainWindow;
-var actionQueue = [];
+var initialAction;
 
 function createWindow() {
-  mainWindow = new BrowserWindow({width: 800, height: 600});
-  // mainWindow = new BrowserWindow({width: 0, height: 0});
+  // mainWindow = new BrowserWindow({width: 800, height: 600});
+  mainWindow = new BrowserWindow({
+    width: 0,
+    height: 0,
+    show: false
+  });
   mainWindow.loadURL('file://' + __dirname + '/index.html');
   mainWindow.webContents.openDevTools();
 
   mainWindow.webContents.on('did-finish-load', () => {
-    actionQueue.forEach((action) => {
-      mainWindow.webContents.send('action', action);
-    });
-  })
+    mainWindow.webContents.send('action', initialAction);
+  });
   app.dock.hide();
 }
 
@@ -27,7 +29,11 @@ app.on('ready', createWindow);
 
 // Incoming action from main process
 parent.on('action', function(action) {
-  actionQueue.push(action)
+  if (!initialAction) {
+    initialAction = action;
+  } else {
+    mainWindow.webContents.send('action', action);
+  }
 });
 
 ipcMain.on('rendererResponse', function(event, msg) {

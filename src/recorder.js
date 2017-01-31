@@ -91,7 +91,6 @@ function recorderCreator(context, ipcSend) {
   recorder.rightChannel = [];
 
   recorder.onaudioprocess = function(e) {
-    console.log ('recording');
     var left = e.inputBuffer.getChannelData(0);
     var right = e.inputBuffer.getChannelData(1);
     // we clone the samples
