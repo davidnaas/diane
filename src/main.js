@@ -7,14 +7,31 @@ var program = require('commander');
 var dianeVersion = require('../package.json').version;
 var inquirer = require('inquirer');
 var ui = new inquirer.ui.BottomBar();
+var fs = require('fs');
 
-var actionList = {
+function log(msg) {
+  fs.appendFile('.log', '\n' + msg);
+}
+
+var defaultActionList = {
   type: 'list',
   name: 'action',
-  message: "I will tell you three things",
+  message: "What would you like to do",
+  choices: [
+    'Record',
+    'Play',
+    new inquirer.Separator(),
+    'Exit'
+   ]
+}
+
+var isRecoringActionList = {
+  type: 'list',
+  name: 'action',
+  message: "Currently recording...",
   choices: [
     'Stop',
-    'Play',
+    new inquirer.Separator(),
     'Exit'
    ]
 }
@@ -29,31 +46,51 @@ var proc = childProcess.spawn(electronPath, [runner],  {
 
 // Propagate all logs from electron child process to main 
 proc.stdout.on('data', function(data) {
-  console.log(data.toString()); 
+  log(data.toString()); 
 });
+
+function exit() {
+  child.emit('action', 'quit')
+}
 
 var child = ipc(proc);
 
-// Start recording at once
-child.emit('action', 'rec');
-prompt();
+function defaultPrompt() {
+  inquirer.prompt([defaultActionList])
+    .then((answer) => {
+      var action = answer.action;
+      if (action === 'Record') {
+        child.emit('action', 'rec');
+        isRecordingPrompt()
+      } else if (action === 'Play') {
+        child.emit('action', 'play');
+        defaultPrompt();
+      } else if (action === 'Exit') {
+        exit();
+      }
+    });
+}
 
-function prompt() {
-  inquirer.prompt([actionList])
+function isRecordingPrompt() {
+  inquirer.prompt([isRecoringActionList])
     .then((answer) => {
       var action = answer.action;
       if (action === 'Stop') {
         child.emit('action', 'stop');
+        defaultPrompt();
       } else if (action === 'Exit') {
-        process.exit(1);
+        exit();
       }
     });
 }
 
 // Response from electron process
 child.on('response', function(msg) {
-  console.log(msg) 
-  if (msg === 'Wrote file') {
-    prompt();
+  log(msg)
+
+  if(msg === 'quit') {
+    process.exit(1);
   }
 });
+
+defaultPrompt();
