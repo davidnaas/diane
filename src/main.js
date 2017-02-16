@@ -55,6 +55,26 @@ function exit() {
 
 var child = ipc(proc);
 
+function generatePlayActionList() {
+  var isRecoringActionList = {
+    type: 'list',
+    name: 'action',
+    message: "Choose a file to play",
+    choices: [
+      'Stop',
+      new inquirer.Separator(),
+      'Exit'
+     ]
+  }
+}
+
+function playPrompt() {
+  inquirer.prompt(generatePlayActionList)
+    .then((answer) => {
+      var action = answer.action;
+    });
+}
+
 function defaultPrompt() {
   inquirer.prompt([defaultActionList])
     .then((answer) => {
@@ -64,7 +84,7 @@ function defaultPrompt() {
         isRecordingPrompt()
       } else if (action === 'Play') {
         child.emit('action', 'play');
-        defaultPrompt();
+        playPrompt();
       } else if (action === 'Exit') {
         exit();
       }

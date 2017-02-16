@@ -1,6 +1,7 @@
 var fs = require('fs');
 var ipcRenderer = require('electron').ipcRenderer;
 var recorderCreator = require('./recorder');
+var format = require('date-fns/format');
 
 var ctx = new AudioContext();
 var recorder = recorderCreator(ctx, ipcRenderer.send);
@@ -33,10 +34,36 @@ function play() {
   audio.play();
 }
 
+function checkPath(path) {
+  const parts = path.split('/');
+  parts.forEach(function(part, i) {
+    const aggregatedPath = parts.slice(0, i + 1).join('/');
+    fs.stat(aggregatedPath, function (err, stats){
+      if (err) {
+        fs.mkdir(aggregatedPath);
+      }
+      if (stats && !stats.isDirectory()) {
+        ipcRenderer.send('rendererResponse', aggregatedPath + ' exists but is not a directory');
+      }
+    });
+  });
+}
+
 function writeFile(encodedAudio) {
   var buf = new Buffer(encodedAudio, 'base64');
-  var fileName = process.env.DIANE_PATH + Date.now().toString() + '.wav';
-  
+  var now = new Date();
+  var year = format(now, 'YYYY');
+  var month = format(now, 'MMMM');
+  var dayOfMonth = format(now, 'Do');
+  var hour = format(now, 'HH');
+  var minute = format(now, 'mm');
+  var second = format(now, 'ss');
+
+  var path = `${process.env.DIANE_PATH}${year}/${month}/${dayOfMonth}`;
+  var fileName = `${path}/${hour}.${minute}.${second}.wav`;
+  ipcRenderer.send('rendererResponse', fileName);
+  checkPath(fileName)
+  ipcRenderer.send('rendererResponse',fileName)
   fs.writeFile(fileName, buf, function(err) {
     if(err) {
       ipcRenderer.send('rendererResponse', 'Error writing file');
@@ -48,14 +75,6 @@ function writeFile(encodedAudio) {
 
 function stop() {
   recorder.stop((encodedAudio) => {
-    fs.stat(process.env.DIANE_PATH, function (err, stats){
-      if (err) {
-        fs.mkdir(process.env.DIANE_PATH);
-      }
-      if (!stats.isDirectory()) {
-        ipcRenderer.send('rendererResponse', 'The specifed DIANE_PATH is not a directory');
-      }
-      writeFile(encodedAudio)
-    });
+    writeFile(encodedAudio)
   });
 }
