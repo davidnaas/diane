@@ -1,4 +1,4 @@
-// Stolen from http://typedarray.org/from-microphone-to-wav-with-getusermedia-and-web-audio
+// Heavily inspired by http://typedarray.org/from-microphone-to-wav-with-getusermedia-and-web-audio
 var send = null;
 
 function mergeBuffers(channelBuffer, recordingLength){

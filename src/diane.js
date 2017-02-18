@@ -1,3 +1,9 @@
+/**
+ * This is the script running inside of the chromium part
+ * of electron. Hence, it is here where all the audio stuff
+ * can be done.
+ */
+
 var fs = require('fs');
 var ipcRenderer = require('electron').ipcRenderer;
 var recorderCreator = require('./recorder');
@@ -43,7 +49,7 @@ function checkPath(path) {
         fs.mkdir(aggregatedPath);
       }
       if (stats && !stats.isDirectory()) {
-        ipcRenderer.send('rendererResponse', aggregatedPath + ' exists but is not a directory');
+        ipcRenderer.send('rendererResponse', aggregatedPath + ' already exists but is not a directory');
       }
     });
   });

@@ -1,4 +1,12 @@
 #!/usr/bin/env node --harmony
+
+/**
+ * This is the main process started by the diane command.
+ * It has two main responsibilities, starting the child process
+ * running electron where all the audio stuff happens and
+ * handling in/out communication with the user.
+ */
+
 var electronPath = require('electron-prebuilt');
 var childProcess = require('child_process');
 var path = require('path');
@@ -25,7 +33,7 @@ var defaultActionList = {
    ]
 }
 
-var isRecoringActionList = {
+var isRecordingActionList = {
   type: 'list',
   name: 'action',
   message: "Currently recording...",
@@ -36,7 +44,7 @@ var isRecoringActionList = {
    ]
 }
 
-// Runner contains the main electron thread
+// Runner contains the electron process
 var runner = path.join(__dirname, 'runner.js');
 
 // Excite the electron
@@ -44,19 +52,20 @@ var proc = childProcess.spawn(electronPath, [runner],  {
   stdio: [null, null, null, 'ipc']
 });
 
-// Propagate all logs from electron child process to main 
+// Propagate all logs from electron child process to log file
 proc.stdout.on('data', function(data) {
   log(data.toString()); 
 });
+
+const child = ipc(proc);
 
 function exit() {
   child.emit('action', 'quit')
 }
 
-var child = ipc(proc);
 
 function generatePlayActionList() {
-  var isRecoringActionList = {
+  var isRecordingActionList = {
     type: 'list',
     name: 'action',
     message: "Choose a file to play",
@@ -92,7 +101,7 @@ function defaultPrompt() {
 }
 
 function isRecordingPrompt() {
-  inquirer.prompt([isRecoringActionList])
+  inquirer.prompt([isRecordingActionList])
     .then((answer) => {
       var action = answer.action;
       if (action === 'Stop') {
