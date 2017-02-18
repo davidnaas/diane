@@ -1,7 +1,6 @@
 /**
- * This is the script running inside of the chromium part
- * of electron. Hence, it is here where all the audio stuff
- * can be done.
+ * This runs inside of the chromium part of electron.
+ * Hence, it is here that all the audio stuff can be done.
  */
 
 var fs = require('fs');
@@ -10,30 +9,14 @@ var recorderCreator = require('./recorder');
 var format = require('date-fns/format');
 
 var ctx = new AudioContext();
-var recorder = recorderCreator(ctx, ipcRenderer.send);
+var recorder = recorderCreator(ctx);
 
-ipcRenderer.on('action', function (event, action) {
-  if (action === 'rec') {
-    navigator.webkitGetUserMedia({ audio:true },
-    function success(e) {
-      var audioInput = ctx.createMediaStreamSource(e);
-      audioInput.connect(recorder);
-      recorder.connect(ctx.destination);
-    },
-    function fail(e) {
-      ipcRenderer.send('rendererResponse', 'Error requesting user microphone');
-    });
-  } else if (action === 'stop') {
-    stop();
-  } else if (action === 'play') {
-    // pass in file name here
-    play();
-  }
-});
-
-function play() {
+function play(pathName) {
   try {
-    var audio = new Audio('file://' + process.env.DIANE_PATH + '1486328268886.wav');
+    var audio = new Audio('file://' + pathName);
+    audio.addEventListener('ended', () => {
+     ipcRenderer.send('rendererResponse', 'Play ended');  
+    });
   } catch (e) {
     ipcRenderer.send('rendererResponse', 'Error playing file');
   }
@@ -72,7 +55,7 @@ function writeFile(encodedAudio) {
   ipcRenderer.send('rendererResponse',fileName)
   fs.writeFile(fileName, buf, function(err) {
     if(err) {
-      ipcRenderer.send('rendererResponse', 'Error writing file');
+      ipcRenderer.send('rendererResponse', err);
     } else {
       ipcRenderer.send('rendererResponse', 'Wrote file');
     }
@@ -84,3 +67,28 @@ function stop() {
     writeFile(encodedAudio)
   });
 }
+
+function record() {
+  navigator.webkitGetUserMedia(
+    { audio: true },
+    function success(e) {
+      var audioInput = ctx.createMediaStreamSource(e);
+      audioInput.connect(recorder);
+      recorder.connect(ctx.destination);
+    },
+    function fail(e) {
+      ipcRenderer.send('rendererResponse', 'Error requesting user microphone');
+    }
+  );
+}
+
+ipcRenderer.on('action', function (event, action) {
+  if (action === 'rec') {
+    record()
+  } else if (action === 'stop') {
+    stop();
+  } else if (action.type === 'play') {
+    // pass in file name here
+    play(action.pathName);
+  }
+});

@@ -1,5 +1,4 @@
 // Heavily inspired by http://typedarray.org/from-microphone-to-wav-with-getusermedia-and-web-audio
-var send = null;
 
 function mergeBuffers(channelBuffer, recordingLength){
   var result = new Float32Array(recordingLength);
@@ -82,8 +81,7 @@ function blobToBase64(blob, cb) {
   reader.readAsDataURL(blob);
 };
 
-function recorderCreator(context, ipcSend) {
-  send = ipcSend;
+function recorderCreator(context) {
   var bufferSize = 2048;
   var recorder = context.createScriptProcessor(bufferSize, 2, 2);
   recorder.recordingLength = 0;

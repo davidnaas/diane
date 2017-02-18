@@ -63,24 +63,40 @@ function exit() {
   child.emit('action', 'quit')
 }
 
+function ls(pathName) {
+  return fs.readdirSync(pathName).filter((file) => file.substring(0, 1) !== '.');
+}
 
-function generatePlayActionList() {
-  var isRecordingActionList = {
+function generatePlayActionList(pathName) {
+  const choices = ls(pathName);
+  choices.push(new inquirer.Separator())
+  choices.push('Exit')
+  return {
     type: 'list',
     name: 'action',
-    message: "Choose a file to play",
-    choices: [
-      'Stop',
-      new inquirer.Separator(),
-      'Exit'
-     ]
+    message: 'Choose a file to play',
+    choices,
   }
 }
 
-function playPrompt() {
-  inquirer.prompt(generatePlayActionList)
+function playPrompt(pathName) {
+  inquirer.prompt([generatePlayActionList(pathName)])
     .then((answer) => {
-      var action = answer.action;
+      const action = answer.action;
+      if (action !== 'Exit') {
+        const fullPath = path.join(pathName, action)
+        const isDir = fs.statSync(fullPath).isDirectory();
+        if (isDir) {
+          playPrompt(fullPath)
+        } else {
+          const file = path.parse(fullPath)
+          if (file.ext === '.wav') {
+            child.emit('action', { type: 'play', pathName: fullPath });
+          }
+        }
+      } else {
+        exit();
+      }
     });
 }
 
@@ -90,17 +106,16 @@ function defaultPrompt() {
       var action = answer.action;
       if (action === 'Record') {
         child.emit('action', 'rec');
-        isRecordingPrompt()
+        recordingPrompt()
       } else if (action === 'Play') {
-        child.emit('action', 'play');
-        playPrompt();
+        playPrompt(process.env.DIANE_PATH);
       } else if (action === 'Exit') {
         exit();
       }
     });
 }
 
-function isRecordingPrompt() {
+function recordingPrompt() {
   inquirer.prompt([isRecordingActionList])
     .then((answer) => {
       var action = answer.action;
@@ -116,6 +131,10 @@ function isRecordingPrompt() {
 // Response from electron process
 child.on('response', function(msg) {
   log(msg)
+
+  if (msg === 'Play ended') {
+    defaultPrompt();
+  }
 
   if(msg === 'quit') {
     process.exit(1);
