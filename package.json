@@ -1,6 +1,6 @@
 {
   "name": "diane",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "That recorder you like will come back in style",
   "main": "src/diane.js",
   "scripts": {
