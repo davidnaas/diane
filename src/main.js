@@ -141,4 +141,9 @@ child.on('response', function(msg) {
   }
 });
 
+if(!process.env.DIANE_PATH) {
+  console.log('Please set your DIANE_PATH where recordings will be saved and try again')
+  process.exit(1)
+}
+
 defaultPrompt();
