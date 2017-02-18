@@ -6,12 +6,12 @@ can record and play back the recorded audio.
 The recordings are saved in a directory structure based on time:
 
 	2017
-		|-- February
-			|-- 16th
-				|-- 17.15.02.wav
+	|-- February
+		|-- 16th
+			|-- 17.15.02.wav
 
 
-It is built entirerly with javasript by abusing the fact that you can use web audio inside of elctron.
+It is built entirerly with javasript by abusing the fact that you can use web audio inside of electron.
 
 # Install
 ```
