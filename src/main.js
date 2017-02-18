@@ -7,7 +7,7 @@
  * handling in/out communication with the user.
  */
 
-var electronPath = require('electron-prebuilt');
+var electronPath = require('electron');
 var childProcess = require('child_process');
 var path = require('path');
 var ipc = require('./ipc');
