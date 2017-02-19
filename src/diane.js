@@ -23,19 +23,17 @@ function play(pathName) {
   audio.play();
 }
 
-function checkPath(path) {
-  const parts = path.split('/');
+function createAndWrite(dirPath, writeCallback) {
+  const parts = dirPath.split('/');
   parts.forEach(function(part, i) {
-    const aggregatedPath = parts.slice(0, i + 1).join('/');
-    fs.stat(aggregatedPath, function (err, stats){
+    const aggregatedPath = parts.slice(0, i + 1).join('/')
+    fs.stat(aggregatedPath, function(err, stats) {
       if (err) {
-        fs.mkdir(aggregatedPath);
-      }
-      if (stats && !stats.isDirectory()) {
-        ipcRenderer.send('rendererResponse', aggregatedPath + ' already exists but is not a directory');
+        fs.mkdirSync(aggregatedPath);
       }
     });
   });
+  writeCallback()
 }
 
 function writeFile(encodedAudio) {
@@ -48,14 +46,17 @@ function writeFile(encodedAudio) {
   var minute = format(now, 'mm');
   var second = format(now, 'ss');
 
-  var path = `${process.env.DIANE_PATH}${year}/${month}/${dayOfMonth}`;
-  var fileName = `${path}/${hour}.${minute}.${second}.wav`;
-  ipcRenderer.send('rendererResponse', fileName);
-  checkPath(fileName)
-  ipcRenderer.send('rendererResponse',fileName)
-  fs.writeFile(fileName, buf, function(err) {
+  var pathName = `${process.env.DIANE_PATH}${year}/${month}/${dayOfMonth}`;
+  var pathWithFile = `${pathName}/${hour}.${minute}.${second}.wav`;
+  // checkPath(pathWithFile)
+
+  fs.writeFile(pathWithFile, buf, function(err) {
     if(err) {
-      ipcRenderer.send('rendererResponse', err);
+      if (err.code === "ENOENT") { // path does not exist yet
+        createAndWrite(pathName, writeFile.bind(null, encodedAudio))
+      }
+      ipcRenderer.send('rendererResponse', 'ERROR WRITING FILE');
+      ipcRenderer.send('rendererResponse', JSON.stringify(err));
     } else {
       ipcRenderer.send('rendererResponse', 'Wrote file');
     }
