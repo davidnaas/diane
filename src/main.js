@@ -18,7 +18,9 @@ var ui = new inquirer.ui.BottomBar();
 var fs = require('fs');
 
 function log(msg) {
-  fs.appendFile('.log', '\n' + msg);
+  fs.appendFile('.log', '\n' + msg, (err) => {
+    if (err) throw err;
+  });
 }
 
 var defaultActionList = {

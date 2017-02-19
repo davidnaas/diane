@@ -33,7 +33,7 @@ function createAndWrite(dirPath, writeCallback) {
       }
     });
   });
-  writeCallback()
+  writeCallback();
 }
 
 function writeFile(encodedAudio) {
@@ -48,7 +48,6 @@ function writeFile(encodedAudio) {
 
   var pathName = `${process.env.DIANE_PATH}${year}/${month}/${dayOfMonth}`;
   var pathWithFile = `${pathName}/${hour}.${minute}.${second}.wav`;
-  // checkPath(pathWithFile)
 
   fs.writeFile(pathWithFile, buf, function(err) {
     if(err) {
@@ -89,7 +88,6 @@ ipcRenderer.on('action', function (event, action) {
   } else if (action === 'stop') {
     stop();
   } else if (action.type === 'play') {
-    // pass in file name here
     play(action.pathName);
   }
 });
