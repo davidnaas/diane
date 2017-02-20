@@ -11,7 +11,6 @@ var electronPath = require('electron');
 var childProcess = require('child_process');
 var path = require('path');
 var ipc = require('./ipc');
-var program = require('commander');
 var dianeVersion = require('../package.json').version;
 var inquirer = require('inquirer');
 var ui = new inquirer.ui.BottomBar();
@@ -56,7 +55,7 @@ var proc = childProcess.spawn(electronPath, [runner],  {
 
 // Propagate all logs from electron child process to log file
 proc.stdout.on('data', function(data) {
-  log(data.toString()); 
+  log(data.toString());
 });
 
 const child = ipc(proc);
